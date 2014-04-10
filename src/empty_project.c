@@ -34,7 +34,45 @@
  *****************************************************************************/
 #include "em_device.h"
 #include "em_chip.h"
+#include "em_gpio.h"
+#include "em_cmu.h"
+#include "em_timer.h"
 
+#define LED_Tx gpioPortA,9
+
+void Timer(uint32_t frequency)
+{
+  //enable clocks needed for timer
+  CMU_ClockEnable(cmuClock_HFPER,true);
+  CMU_ClockEnable(cmuClock_GPIO,true);
+  CMU_ClockEnable(cmuClock_TIMER0 ,true);
+
+  //set pin 9 as output pin, initially low
+  GPIO_PinModeSet(LED_Tx,gpioModePushPull,0);
+
+  //HFPER = HF/32 = 14MHz/32 = 437500 MHz
+  CMU_ClockDivSet(cmuClock_HFPER,cmuClkDiv_32);
+
+  //initialize timer structure
+  TIMER_Init_TypeDef initTimer = TIMER_INIT_DEFAULT;
+  initTimer.enable = false;
+  initTimer.prescale = timerPrescale1024;
+  TIMER_Init(TIMER0,&initTimer);
+
+  //allow user to decide the frequency
+  uint32_t timer0frequency = CMU_ClockFreqGet(cmuClock_TIMER0 )/1024;
+  if(timer0frequency>0xFFFF)
+  {
+    timer0frequency=0xFFFF;
+  }
+
+  uint32_t timerTop = timer0frequency/frequency - 1;
+  TIMER_TopSet(TIMER0,timerTop);
+
+  //start the timer
+  TIMER_Enable(TIMER0,true);
+
+}
 /**************************************************************************//**
  * @brief  Main function
  *****************************************************************************/
