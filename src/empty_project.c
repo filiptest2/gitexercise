@@ -40,12 +40,14 @@
 
 #define LED_Tx gpioPortA,9
 
+//timer ISR
 void TIMER0_IRQHandler(void)
 {
   TIMER_IntClear(TIMER0,TIMER_IF_OF);
   GPIO_PinOutToggle(LED_Tx);
 }
 
+//timer function, lets the user decide how often led should blink
 void Timer(uint32_t frequency)
 {
   //enable clocks needed for timer
