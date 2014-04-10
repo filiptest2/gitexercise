@@ -40,6 +40,12 @@
 
 #define LED_Tx gpioPortA,9
 
+void TIMER0_IRQHandler(void)
+{
+  TIMER_IntClear(TIMER0,TIMER_IF_OF);
+  GPIO_PinOutToggle(LED_Tx);
+}
+
 void Timer(uint32_t frequency)
 {
   //enable clocks needed for timer
@@ -69,10 +75,15 @@ void Timer(uint32_t frequency)
   uint32_t timerTop = timer0frequency/frequency - 1;
   TIMER_TopSet(TIMER0,timerTop);
 
+  //enable interrupts
+  TIMER_IntEnable(TIMER0,TIMER_IF_OF);
+  NVIC_EnableIRQ(TIMER0_IRQn);
+
   //start the timer
   TIMER_Enable(TIMER0,true);
 
 }
+
 /**************************************************************************//**
  * @brief  Main function
  *****************************************************************************/
@@ -80,6 +91,7 @@ int main(void)
 {
   /* Chip errata */
   CHIP_Init();
+  Timer(1);
 
   /* Infinite loop */
   while (1) {
