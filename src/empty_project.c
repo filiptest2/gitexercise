@@ -34,6 +34,23 @@
  *****************************************************************************/
 #include "em_device.h"
 #include "em_chip.h"
+#include "em_gpio.h"
+#include "em_timer.h"
+
+#define LED_Tx gpioPortA,9
+
+void TIMER0_IRQHandler(void)
+{
+  TIMER_IntClear(TIMER0,TIMER_IF_OF);
+  GPIO_PinOutToggle(LED_Tx);
+}
+
+void Timer(uint32_t frequency)
+{
+  //enable interrupts
+  TIMER_IntEnable(TIMER0,TIMER_IF_OF);
+  NVIC_EnableIRQ(TIMER0_IRQn);
+}
 
 /**************************************************************************//**
  * @brief  Main function
@@ -42,7 +59,7 @@ int main(void)
 {
   /* Chip errata */
   CHIP_Init();
-
+  Timer(1);
   /* Infinite loop */
   while (1) {
   }
